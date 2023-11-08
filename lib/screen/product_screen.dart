@@ -28,6 +28,7 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   bool _isFavortite = false;
   bool _isEdit = false;
+  bool _isDelete = false;
   bool _isAddCart = false;
   bool _isShowMoreDescription = false;
   Product? product;
@@ -69,6 +70,73 @@ class _ProductScreenState extends State<ProductScreen> {
     location = await Geolocator.getCurrentPosition();
   }
 
+  void showAlertDelete() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Delete'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Delete ${product!.title}"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      _isDelete = true;
+                      Navigator.pop(context);
+                      popScreen();
+                    },
+                    child: const Text('Delete')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void popScreen() {
+    LatLng? latLng;
+    try {
+      latLng = LatLng(location!.latitude, location!.longitude);
+    } catch (err) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Center(child: Text("Get location Fail")),
+      ));
+      Timer(const Duration(seconds: 1), () {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      });
+    }
+    Navigator.pop(
+        context,
+        ProductDetail(
+          id: widget.product.id,
+          isFavorite: _isFavortite,
+          isEdit: _isEdit,
+          isDelete: _isDelete,
+          isAddCart: _isAddCart,
+          product: product,
+          latLng: latLng,
+          dateTime: dateTime,
+          qty: qty,
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,40 +144,46 @@ class _ProductScreenState extends State<ProductScreen> {
         backgroundColor: Colors.deepPurple,
         leading: IconButton(
           onPressed: () async {
-            if (_isFavortite || _isAddCart) {
-              LatLng? latLng;
-              try {
-                latLng = LatLng(location!.latitude, location!.longitude);
-              } catch (err) {}
-              Navigator.pop(
-                  context,
-                  ProductDetail(
-                    id: widget.product.id,
-                    isFavorite: _isFavortite,
-                    isEdit: _isEdit,
-                    isAddCart: _isAddCart,
-                    product: product,
-                    latLng: latLng,
-                    dateTime: dateTime,
-                    qty: qty,
-                  ));
-            } else {
-              Navigator.pop(
-                  context,
-                  ProductDetail(
-                    id: widget.product.id,
-                    isFavorite: _isFavortite,
-                    isAddCart: _isAddCart,
-                    isEdit: _isEdit,
-                    product: product,
-                  ));
-            }
+            popScreen();
           },
           icon: const Icon(
             Icons.arrow_back,
             color: Colors.white,
           ),
         ),
+        actions: [
+          PopupMenuButton(
+            color: Colors.white,
+            onSelected: (String value) {
+              if (value == "edit") {
+              } else {
+                showAlertDelete();
+              }
+            },
+            itemBuilder: (context) {
+              return [
+                const PopupMenuItem<String>(
+                    value: "edit",
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit),
+                        SizedBox(width: 10),
+                        Text("Edit")
+                      ],
+                    )),
+                const PopupMenuItem<String>(
+                    value: "delete",
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete),
+                        SizedBox(width: 10),
+                        Text("Delete")
+                      ],
+                    ))
+              ];
+            },
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

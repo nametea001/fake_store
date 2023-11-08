@@ -54,6 +54,7 @@ class ProductDetail {
   int id;
   bool? isFavorite;
   bool? isEdit;
+  bool? isDelete;
   bool? isAddCart;
   LatLng? latLng;
   Product? product;
@@ -64,6 +65,7 @@ class ProductDetail {
     required this.id,
     this.isFavorite,
     this.isEdit,
+    this.isDelete,
     this.isAddCart,
     this.latLng,
     this.dateTime,
