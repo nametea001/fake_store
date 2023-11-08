@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  final formKey = GlobalKey<FormState>();
   int maxProductID = 0;
   int _selectedIndex = 0;
   late TabController _tabController;
@@ -711,6 +712,198 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                    onPressed: () {
+                      Product product = Product(
+                          id: 0,
+                          title: "",
+                          price: 0,
+                          description: "",
+                          category: "",
+                          image: "",
+                          rating: Rating(rate: 0, count: 0));
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Edit product'),
+                                content: StatefulBuilder(builder:
+                                    (BuildContext context,
+                                        StateSetter setState) {
+                                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                                  return SingleChildScrollView(
+                                    child: Form(
+                                      key: formKey,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          TextFormField(
+                                            maxLines: 2,
+                                            onSaved: ((newValue) {
+                                              product.title = newValue!.trim();
+                                            }),
+                                            validator: (String? str) {
+                                              if (str!.isEmpty) {
+                                                return "Please input title";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Title",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30.0),
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.title,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextFormField(
+                                            keyboardType: TextInputType.number,
+                                            onSaved: ((newValue) {
+                                              double d = double.parse(
+                                                  newValue!.trim());
+                                              product.price = double.parse(
+                                                  d.toStringAsFixed(2));
+                                            }),
+                                            validator: (String? str) {
+                                              if (str!.isEmpty) {
+                                                return "Please input price";
+                                              }
+                                              if (double.parse(str) < 0) {
+                                                return "Please price error";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Price",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30.0),
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.payments,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextFormField(
+                                            onSaved: ((newValue) {
+                                              product.category =
+                                                  newValue!.trim();
+                                            }),
+                                            validator: (String? str) {
+                                              if (str!.isEmpty) {
+                                                return "Please input category";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Category",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30.0),
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.category,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextFormField(
+                                            onSaved: ((newValue) {
+                                              product.image = newValue!.trim();
+                                            }),
+                                            validator: (String? str) {
+                                              if (str!.isEmpty) {
+                                                return "Please input URL";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Image URL",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30.0),
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.link,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextFormField(
+                                            maxLines: 5,
+                                            onSaved: ((newValue) {
+                                              product.description =
+                                                  newValue!.trim();
+                                            }),
+                                            validator: (String? str) {
+                                              if (str!.isEmpty) {
+                                                return "Please input title";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Description",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30.0),
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.description,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                actions: [
+                                  TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.green,
+                                      ),
+                                      onPressed: () async {
+                                        if (formKey.currentState!.validate()) {
+                                          formKey.currentState!.save();
+                                          maxProductID = maxProductID + 1;
+                                          product.id = maxProductID;
+                                          setState(() {
+                                            products.insert(0, product);
+                                          });
+                                          Navigator.pop(context);
+                                        }
+                                      },
+                                      child: const Text('Save')),
+                                  TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Cancel')),
+                                ],
+                              ));
+                    },
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ))
+              ]
+            : [],
         bottom: _selectedIndex == 1
             ? AppBar(
                 title: Row(

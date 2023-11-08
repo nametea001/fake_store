@@ -241,6 +241,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
+                        _isEdit = true;
                         setState(() {
                           product = product;
                         });
