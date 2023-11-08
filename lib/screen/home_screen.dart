@@ -1,8 +1,11 @@
-// ignore_for_file: iterable_contains_unrelated_type
+// ignore_for_file: iterable_contains_unrelated_type, use_build_context_synchronously
+
+import 'dart:async';
 
 import 'package:face_store/model/product.dart';
 import 'package:face_store/screen/product_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 
@@ -15,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  int maxProductID = 0;
   int _selectedIndex = 0;
   late TabController _tabController;
   String title = "Home";
@@ -47,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen>
         products = temp;
         _isLoading = false;
       });
+      maxProductID = products[products.length - 1].id;
     }
   }
 
@@ -72,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen>
                   parent: BouncingScrollPhysics()),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200,
-                childAspectRatio: 0.725,
+                childAspectRatio: 0.67,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -113,17 +118,27 @@ class _HomeScreenState extends State<HomeScreen>
                           products[index] = temp.product!;
                         });
                       }
-                      if (temp.isDelete!) {
-                        setState(() {
-                          products.removeWhere((item) => item.id == temp.id);
-                        });
-                      }
                       if (temp.isAddCart! && temp.qty! > 0) {
                         carts.add(
                             Cart(id: temp.id, qty: temp.qty!, selected: false));
                       } else {
                         setState(() {
                           carts.removeWhere((item) => item.id == temp.id);
+                        });
+                      }
+                      if (temp.isDelete!) {
+                        setState(() {
+                          products.removeWhere((item) => item.id == temp.id);
+                          favorites.removeWhere((item) => item.id == temp.id);
+                          carts.removeWhere((item) => item.id == temp.id);
+                        });
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content:
+                              Center(child: Text("Delete product success")),
+                        ));
+                        Timer(const Duration(seconds: 1), () {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         });
                       }
                     }
@@ -170,6 +185,29 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ),
                         const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Row(
+                            children: [
+                              RatingBarIndicator(
+                                rating: products[index].rating.rate,
+                                itemCount: 5,
+                                itemSize: 15,
+                                physics: const BouncingScrollPhysics(),
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                "${products[index].rating.rate}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
@@ -657,7 +695,9 @@ class _HomeScreenState extends State<HomeScreen>
         });
       }
     } else {
-      priceTotal = 0.00;
+      setState(() {
+        priceTotal = 0.00;
+      });
     }
   }
 
@@ -689,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 actions: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: countChecked == 0 ? null : () {},
                     style: ElevatedButton.styleFrom(),
                     child: Text("Buy ($countChecked)"),
                   ),

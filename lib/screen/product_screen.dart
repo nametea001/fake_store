@@ -26,15 +26,22 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  final formKey = GlobalKey<FormState>();
   bool _isFavortite = false;
   bool _isEdit = false;
   bool _isDelete = false;
   bool _isAddCart = false;
   bool _isShowMoreDescription = false;
-  Product? product;
+  late Product product;
   Position? location;
   DateTime? dateTime;
   int qty = 0;
+
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _imageController = TextEditingController();
 
   @override
   void initState() {
@@ -44,6 +51,16 @@ class _ProductScreenState extends State<ProductScreen> {
     _isAddCart = widget.isAddCart;
     qty = widget.qty;
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _priceController.dispose();
+    _categoryController.dispose();
+    _descriptionController.dispose();
+    _imageController.dispose();
+    super.dispose();
   }
 
   Future<void> _getLocation() async {
@@ -70,6 +87,180 @@ class _ProductScreenState extends State<ProductScreen> {
     location = await Geolocator.getCurrentPosition();
   }
 
+  void showAlertEdit() {
+    _titleController.text = product.title;
+    _priceController.text = "${product.price}";
+    _categoryController.text = product.category;
+    _descriptionController.text = product.description;
+    _imageController.text = product.image;
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Edit product'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          maxLines: 2,
+                          controller: _titleController,
+                          onSaved: ((newValue) {
+                            product.title = newValue!.trim();
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please input title";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Title",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.title,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          keyboardType: TextInputType.number,
+                          controller: _priceController,
+                          onSaved: ((newValue) {
+                            double d = double.parse(newValue!.trim());
+                            product.price = double.parse(d.toStringAsFixed(2));
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please input price";
+                            }
+                            if (double.parse(str) < 0) {
+                              return "Please price error";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Price",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.payments,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _categoryController,
+                          onSaved: ((newValue) {
+                            product.category = newValue!.trim();
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please input category";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Category",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.category,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _imageController,
+                          onSaved: ((newValue) {
+                            product.image = newValue!.trim();
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please input URL";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Image URL",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.link,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          maxLines: 5,
+                          controller: _descriptionController,
+                          onSaved: ((newValue) {
+                            product.description = newValue!.trim();
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please input title";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Description",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.description,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      if (formKey.currentState!.validate()) {
+                        formKey.currentState!.save();
+                        setState(() {
+                          product = product;
+                        });
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text('Save')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
   void showAlertDelete() {
     showDialog(
         context: context,
@@ -81,7 +272,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Delete ${product!.title}"),
+                    Text("Delete ${product.title}"),
                   ],
                 );
               }),
@@ -115,12 +306,9 @@ class _ProductScreenState extends State<ProductScreen> {
     try {
       latLng = LatLng(location!.latitude, location!.longitude);
     } catch (err) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Center(child: Text("Get location Fail")),
-      ));
-      Timer(const Duration(seconds: 1), () {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      });
+      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //   content: Center(child: Text("Getting location")),
+      // ));
     }
     Navigator.pop(
         context,
@@ -156,6 +344,7 @@ class _ProductScreenState extends State<ProductScreen> {
             color: Colors.white,
             onSelected: (String value) {
               if (value == "edit") {
+                showAlertEdit();
               } else {
                 showAlertDelete();
               }
@@ -190,7 +379,7 @@ class _ProductScreenState extends State<ProductScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Image.network(
-              widget.product.image,
+              product.image,
               height: MediaQuery.of(context).size.height / 2,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
@@ -203,7 +392,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.product.title,
+                    product.title,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -211,7 +400,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '\$${widget.product.price}',
+                    '\$${product.price}',
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.red,
@@ -221,7 +410,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   Row(
                     children: [
                       RatingBarIndicator(
-                        rating: widget.product.rating.rate,
+                        rating: product.rating.rate,
                         itemCount: 5,
                         itemSize: 25,
                         physics: const BouncingScrollPhysics(),
@@ -232,7 +421,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        "${widget.product.rating.rate}",
+                        "${product.rating.rate}",
                         style: const TextStyle(
                           fontSize: 18,
                         ),
@@ -246,7 +435,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       ),
                       const SizedBox(width: 7),
                       Text(
-                        "Sold ${widget.product.rating.count} pieces",
+                        "Sold ${product.rating.count} pieces",
                         style: const TextStyle(
                           fontSize: 18,
                         ),
@@ -313,7 +502,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            widget.product.category,
+                            product.category,
                             style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
@@ -323,7 +512,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   const SizedBox(height: 8),
                   Flexible(
                     child: Text(
-                      widget.product.description,
+                      product.description,
                       maxLines: _isShowMoreDescription ? null : 3,
                       overflow:
                           _isShowMoreDescription ? null : TextOverflow.ellipsis,
