@@ -413,7 +413,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       RatingBarIndicator(
                         rating: product.rating.rate,
                         itemCount: 5,
-                        itemSize: 25,
+                        itemSize: 20,
                         physics: const BouncingScrollPhysics(),
                         itemBuilder: (context, _) => const Icon(
                           Icons.star,
@@ -424,7 +424,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       Text(
                         "${product.rating.rate}",
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(width: 7),

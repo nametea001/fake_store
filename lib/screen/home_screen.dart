@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
                   parent: BouncingScrollPhysics()),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200,
-                childAspectRatio: 0.67,
+                childAspectRatio: 0.625,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
